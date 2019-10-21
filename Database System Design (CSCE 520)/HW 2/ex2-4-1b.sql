@@ -1,0 +1,1 @@
+select * from laptop where hd >= 100;

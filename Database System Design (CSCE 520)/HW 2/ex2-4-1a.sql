@@ -1,0 +1,1 @@
+select * from pc where speed > 3.00;
