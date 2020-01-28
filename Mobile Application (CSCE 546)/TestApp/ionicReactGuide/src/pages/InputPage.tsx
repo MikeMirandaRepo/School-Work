@@ -3,17 +3,8 @@ import {
   IonHeader,
   IonPage,
   IonTitle,
-  IonItemOption,
-  IonAvatar,
   IonToolbar,
-  IonList,
-  IonItem,
-  IonText,
-  IonLabel,
-  IonItemSliding,
-  IonItemOptions,
   IonButton,
-  IonIcon,
   IonBackButton,
   IonInput
 } from "@ionic/react";

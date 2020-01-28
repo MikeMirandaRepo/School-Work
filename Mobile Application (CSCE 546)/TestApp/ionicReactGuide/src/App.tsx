@@ -7,6 +7,10 @@ import ExampleRoute from "./pages/ExampleRoute";
 import ButtonPage from "./pages/ButtonPage";
 import ScrollableList from "./pages/ScrollableList";
 import InputPage from "./pages/InputPage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+
+
 
 
 
@@ -33,12 +37,13 @@ const App: React.FC = () => (
   <IonApp>
     <IonReactRouter>
       <IonRouterOutlet>
-        <Route exact path="/" render={() => <Redirect to="/home" />} />
-        <Route path="/Home" component={Home} exact />
+        <Route path="/" component={Home} exact />
         <Route path="/ExampleRoute" component={ExampleRoute} exact />
         <Route path="/ButtonPage" component={ButtonPage} exact />
         <Route path="/ScrollableList" component={ScrollableList} exact />
         <Route path="/InputPage" component={InputPage} exact />
+        <Route path="/LoginPage" component={LoginPage} exact />
+        <Route path="/RegisterPage" component={RegisterPage} exact />
       </IonRouterOutlet>
     </IonReactRouter>
   </IonApp>

@@ -3,31 +3,26 @@ import {
   IonHeader,
   IonPage,
   IonTitle,
-  IonItemOption,
-  IonAvatar,
   IonToolbar,
   IonList,
-  IonItem,
-  IonText,
-  IonLabel,
   IonItemSliding,
-  IonItemOptions,
   IonButton,
-  IonIcon,
-  IonBackButton,
-  IonInput
 } from "@ionic/react";
 import React, { useState } from "react";
-import { star } from "ionicons/icons";
 
-const pages = [
+type Page ={
+  name: string
+  path: string
+}
+
+const pages : Page[] = [
   {
     name: "Button",
     path: "/ButtonPage"
   },
   {
     name: "ExampleRoute",
-    desc: "/ExampleRoute"
+    path: "/ExampleRoute"
   },
   {
     name: "Input",
@@ -36,6 +31,14 @@ const pages = [
   {
     name: "ScrollableList",
     path: "/ScrollableList"
+  },
+  {
+    name: "Login Page",
+    path: "/LoginPage"
+  },
+  {
+    name: "Register",
+    path: "/RegisterPage"
   }
 ];
 
@@ -48,10 +51,10 @@ const Home: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
-        <IonList>
+        <IonList class="ion-text-center">
           {pages.map((element, i) => (
             <IonItemSliding>
-              <IonButton routerLink={pages[i].path}>
+              <IonButton routerLink={pages[i].path} >
                 Click to go to the {pages[i].name} Page
               </IonButton>
             </IonItemSliding>

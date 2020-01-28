@@ -3,13 +3,25 @@ import {
   IonHeader,
   IonPage,
   IonTitle,
+  IonItemOption,
+  IonAvatar,
   IonToolbar,
+  IonList,
+  IonItem,
+  IonText,
+  IonLabel,
+  IonItemSliding,
+  IonItemOptions,
   IonButton,
-  IonBackButton,
+  IonIcon,
+  IonInput,
+  IonBackButton
 } from "@ionic/react";
 import React, { useState } from "react";
+import { star } from "ionicons/icons";
 
-const ExampleRoute: React.FC = () => {
+
+const RegisterPage: React.FC = () => {
   return (
     <IonPage>
       <IonHeader>
@@ -17,15 +29,13 @@ const ExampleRoute: React.FC = () => {
           <IonButton slot="start">
             <IonBackButton />
           </IonButton>
-          <IonTitle class="ion-text-center">This is the Example page</IonTitle>
+          <IonTitle class="ion-text-center">Register Page</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
-        {" "}
-        <IonButton routerLink="/">Click to go to the Home Page</IonButton>
       </IonContent>
     </IonPage>
   );
 };
 
-export default ExampleRoute;
+export default RegisterPage;
