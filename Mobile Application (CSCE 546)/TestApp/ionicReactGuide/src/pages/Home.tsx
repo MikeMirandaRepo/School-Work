@@ -1,55 +1,60 @@
-import { IonContent, IonHeader, IonPage, IonTitle, IonItemOption,  IonAvatar, IonToolbar, IonList, IonItem, IonText, IonLabel, IonItemSliding, IonItemOptions } from '@ionic/react';
-import React from 'react';
+import {
+  IonContent,
+  IonHeader,
+  IonPage,
+  IonTitle,
+  IonItemOption,
+  IonAvatar,
+  IonToolbar,
+  IonList,
+  IonItem,
+  IonText,
+  IonLabel,
+  IonItemSliding,
+  IonItemOptions,
+  IonButton,
+  IonIcon,
+  IonBackButton,
+  IonInput
+} from "@ionic/react";
+import React, { useState } from "react";
+import { star } from "ionicons/icons";
 
-const arr = [
+const pages = [
   {
-    name: "Finn",
-    desc: 'Tried to kill Himself'
+    name: "Button",
+    path: "/ButtonPage"
   },
   {
-    name: "Han",
-    desc: 'Has a Dumb Son'
+    name: "ExampleRoute",
+    desc: "/ExampleRoute"
   },
   {
-    name: "Rey",
-    desc: 'Who my parents'
+    name: "Input",
+    path: "/InputPage"
   },
-
-]
-
+  {
+    name: "ScrollableList",
+    path: "/ScrollableList"
+  }
+];
 
 const Home: React.FC = () => {
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar >
-          <IonTitle class="ion-text-center">Ionic Title in a Toolbar</IonTitle>
+        <IonToolbar>
+          <IonTitle class="ion-text-center">Hub of All new Pages</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
-        Hello World
         <IonList>
-          {arr.map((element,i) => (
-
+          {pages.map((element, i) => (
             <IonItemSliding>
-
-              <IonItem>
-                <IonAvatar>
-                    <img src={`https://ionicframework.com/docs/demos/api/list/avatar-${element.name.toLowerCase()}.png`} >
-                    </img>
-                </IonAvatar>  
-
-                <IonLabel>
-                  <h2>{element.name}</h2>
-                  <p>{element.desc}</p>
-                </IonLabel>
-               </IonItem>
-
-                <IonItemOptions side = "start">
-                  <IonItemOption onClick={() => alert('pressed Option')}> Hello </IonItemOption>
-                </IonItemOptions>
-
-          </IonItemSliding>
+              <IonButton routerLink={pages[i].path}>
+                Click to go to the {pages[i].name} Page
+              </IonButton>
+            </IonItemSliding>
           ))}
         </IonList>
       </IonContent>
@@ -58,3 +63,11 @@ const Home: React.FC = () => {
 };
 
 export default Home;
+
+
+
+
+
+
+
+
