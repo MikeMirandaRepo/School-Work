@@ -18,11 +18,13 @@ import {
   IonItemSliding,
   IonToolbar
 } from "@ionic/react";
+import firebase from "firebase"
 import { add, remove } from "ionicons/icons";
 import React, { Component } from "react";
 import { setUpNewOrders } from "../../redux/react-redux";
 import { Link } from "react-router-dom";
 import { connect } from "react-redux";
+import { createSecureContext } from "tls";
 
 export interface IAppProps {
   history: any;
@@ -50,7 +52,7 @@ export interface IAppState {
 const mapStateToProps = (state: any) => {
   return {
     products: state.products,
-    orderID: state.orderID
+    orderID: state.orderID,
   };
 };
 
@@ -68,7 +70,7 @@ class ProductDetailPage extends React.Component<IAppProps, IAppState> {
     console.log(this.props);
     this.state = {
       product: this.props.location.state.product,
-      count: 1
+      count: 1,
     };
   }
 
@@ -90,15 +92,6 @@ class ProductDetailPage extends React.Component<IAppProps, IAppState> {
     });
     alert("You have added an new Order");
   }
-
-  // setValues(count: any) {
-  //   this.state.count = count;
-  //   var countNum = parseInt(this.props.location.state.product.count);
-  //   var priceNum: any = parseFloat(this.props.location.state.product.price);
-  //   var total: any = countNum * priceNum;
-  //   var totalCost = total.toString();
-  //   this.state.product.totalCost = totalCost;
-  // }
 
   render() {
     const { product } = this.state;

@@ -8,6 +8,7 @@ import {
   IonTabButton,
   IonTabs
 } from "@ionic/react";
+import firebase from "firebase";
 import { IonReactRouter } from "@ionic/react-router";
 import { apps, flash, send } from "ionicons/icons";
 import ProductListPage from "./pages/ProductPages/ProductListPage";
@@ -15,15 +16,15 @@ import AddProductPage from "./pages/ProductPages/AddProductPage";
 import ProductDetailPage from "./pages/ProductPages/ProductDetailPage";
 import OrderListPage from "./pages/OrderPages/OrderListPage";
 import OrderDetailPage from "./pages/OrderPages/OrderDetailPage";
+import Login from "./pages/Auth/Login";
+import SignUp from "./pages/Auth/SignUp";
+
 import {
   Redirect,
   BrowserRouter as Router,
   Route,
   Link
 } from "react-router-dom";
- 
-import Details from "./pages/Details";
-
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/react/css/core.css";
 
@@ -44,10 +45,37 @@ import "@ionic/react/css/display.css";
 import "./theme/variables.css";
 import { render } from "@testing-library/react";
 
+var firebaseConfig = {
+  apiKey: "AIzaSyDRpqwzkbL7bljwjFB0jQ8iW9aozm9I21M",
+  authDomain: "gamecockstore-37e56.firebaseapp.com",
+  databaseURL: "https://gamecockstore-37e56.firebaseio.com",
+  projectId: "gamecockstore-37e56",
+  storageBucket: "gamecockstore-37e56.appspot.com",
+  messagingSenderId: "1027386417640",
+  appId: "1:1027386417640:web:bf85e82ea43549efb2c45d",
+  measurementId: "G-VRK9TW2VBD"
+};
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+firebase.analytics();
+let db = firebase.firestore();
+export { db };
+
 export default class App extends React.Component {
-  constructor(props: any) {
-    super(props);
-  }
+  // firebaseSetup() {
+  //   for (let i = 0; i < orders.length; i++) {
+  //     db.collection("orders")
+  //       .add(orders[i])
+  //       .then(ref => {
+  //         console.log("Added document with ID: ", ref.id);
+  //       });
+  //     // db.collection("orders")
+  //     //   .add(orders)
+  //     //   .then(ref => {
+  //     //     console.log("Added document with ID: ", ref.id);
+  //     //   });
+  //   }
+  // }
   render() {
     return (
       <IonApp>
@@ -63,7 +91,7 @@ export default class App extends React.Component {
               <Route path="/OrderListPage/details" component={OrderListPage} />
               <Route
                 path="/"
-                render={() => <Redirect to="/ProductListPage" />}
+                render={() => <Redirect to="/Login" />}
                 exact={true}
               />
               <Route
@@ -91,6 +119,8 @@ export default class App extends React.Component {
                 component={ProductDetailPage}
                 exact
               />
+              <Route path="/Login" component={Login} />
+              <Route path="/SignUp" component={SignUp} />
             </IonRouterOutlet>
             <IonTabBar slot="bottom">
               <IonTabButton tab="ProductListPage" href="/ProductListPage">
@@ -101,6 +131,10 @@ export default class App extends React.Component {
                 <IonIcon icon={apps} />
                 <IonLabel>Order List</IonLabel>
               </IonTabButton>
+              {/* <IonTabButton onClick={() => this.firebaseSetup()} tab="">
+                <IonIcon icon={apps} />
+                <IonLabel>Firebase Test</IonLabel>
+              </IonTabButton> */}
             </IonTabBar>
           </IonTabs>
         </IonReactRouter>

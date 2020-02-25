@@ -1,7 +1,0 @@
-{
-  "name": "LFG",
-  "integrations": {
-    "capacitor": {}
-  },
-  "type": "react"
-}

@@ -1,5 +1,5 @@
 /*
-File: HW2.cpp
+File: HW3.cpp
 Author: Michael Miranda
 */ 
 #include <stdio.h>

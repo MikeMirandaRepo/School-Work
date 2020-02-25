@@ -1,5 +1,6 @@
 import { createStore, applyMiddleware } from "redux";
-
+import firebase from "firebase";
+import { db } from "../App";
 let products = [
   {
     name: "Mug",
@@ -83,7 +84,8 @@ let orders = [
 const initialState: any = {
   products: products,
   orders: orders,
-  orderID: orders.length
+  orderID: orders.length,
+  currentUser: ""
 };
 
 //
@@ -134,5 +136,28 @@ export const setUpNewProducts = (newProduct: any) => {
   return {
     type: "setUpNewProducts",
     value: newProduct
+  };
+};
+
+const watchProducts = () => {
+  return function(dispatch: any) {
+    db.collection("products")
+      .doc("products")
+      .onSnapshot(function(doc) {
+        // console.log("\n\nTest: ", doc.data());
+        var productz: any = doc.data();
+        let productPromises = productz.map((product: any) => {
+          return db
+            .collection("classes")
+            .doc(product)
+            .get();
+        });
+        Promise.all(productPromises).then((productDocs: any) => {
+          let returnClasses = productDocs.map((productDocs: any) => {
+            return productDocs.data();
+          });
+          dispatch(setUpNewProducts(returnClasses));
+        });
+      });
   };
 };
