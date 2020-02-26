@@ -19,6 +19,7 @@ import { Link } from "react-router-dom";
 import firebase from "firebase";
 import React from "react";
 import { db } from "../../App";
+import { products, orders } from "../../redux/react-redux";
 
 export interface SignUpProps {}
 
@@ -46,15 +47,15 @@ export default class SignUp extends React.Component<SignUpProps, SignUpState> {
         // on success, create user data
         let userData = {
           email: this.state.email,
-          orders: ["9wgmBDb0TLW2rhe8e8Yw"],
-          products: ["9Se1atQ3mibsfWpUrlxK"]
+          orders: orders,
+          products: products
         };
         // Add user data to users collection with doc id of uid
         db.collection("users")
           .doc(data.user.uid)
           .set(userData)
-          .then(() => alert("added a User"));
-        // .catch(error => this.setState({ errorMessage: error.message })); () => this.props.navigation.navigate("Login")
+          .then(() => alert("added a User"))
+          .catch(error => console.log(error));
         // Return object with user creation success
       });
   };

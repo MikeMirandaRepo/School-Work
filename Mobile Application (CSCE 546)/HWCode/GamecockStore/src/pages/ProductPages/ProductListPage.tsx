@@ -15,10 +15,8 @@ import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import React, { Component } from "react";
 import firebase from "firebase";
-import { wait } from "@testing-library/react";
-//import Product from "../components";
-const imgURLDefault: string =
-  "https://www.foragegroup.com/public/images/noim.png";
+import { toast } from "../../components/toast";
+import { checkCurrentUser, handleSignOut } from "../../App";
 
 const mapStateToProps = (state: any) => {
   return {
@@ -40,18 +38,17 @@ export interface IAppState {
 
 class ProductListPage extends React.Component<IAppProps, IAppState> {
   constructor(props: IAppProps) {
-    super(props);
-    this.state = { currentUser: null };
-  }
-  componentDidMount() {
-    firebase.auth().onAuthStateChanged(user => {
+    checkCurrentUser().then((user: any) => {
       if (user) {
-        const { currentUser } = firebase.auth();
-        this.setState({ currentUser });
-        console.log(this.state.currentUser.uid);
+        this.setState({ currentUser: user });
+        toast(this.state.currentUser.uid);
       }
     });
+    super(props);
   }
+
+  componentWillUnmount() {}
+
   _createCardList(products: []) {
     return products.map((product: any) => {
       return (
@@ -71,7 +68,6 @@ class ProductListPage extends React.Component<IAppProps, IAppState> {
               </IonCardSubtitle>
               <IonCardSubtitle>{product.category} </IonCardSubtitle>
             </IonCardHeader>
-
             <img src={product.imgURL} />
             <IonText>Description: {product.description}</IonText>
           </IonCard>
@@ -79,6 +75,9 @@ class ProductListPage extends React.Component<IAppProps, IAppState> {
       );
     });
   }
+
+
+
   public render() {
     let productCards: any = this._createCardList(this.props.products);
     //console.log(productCards);
@@ -88,7 +87,7 @@ class ProductListPage extends React.Component<IAppProps, IAppState> {
           <IonToolbar>
             <IonTitle>Products</IonTitle>
             <IonButton
-              onClick={() => firebase.auth().signOut()}
+              onClick={() => handleSignOut()}
               slot="start"
               routerDirection="back"
               routerLink="/Login"
@@ -100,7 +99,10 @@ class ProductListPage extends React.Component<IAppProps, IAppState> {
             </IonButton>
           </IonToolbar>
         </IonHeader>
-        <IonContent>{productCards}</IonContent>
+        <IonContent>
+          <IonButton onClick={() => checkCurrentUser()}>Check User</IonButton>
+          {productCards}
+        </IonContent>
       </IonPage>
     );
   }

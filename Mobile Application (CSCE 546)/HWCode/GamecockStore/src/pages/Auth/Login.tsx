@@ -16,10 +16,10 @@ import { Link } from "react-router-dom";
 import firebase from "firebase";
 import { db } from "../../App";
 import React from "react";
-import { wait } from "@testing-library/react";
+import { toast } from "../../components/toast";
+import { checkCurrentUser } from "../../App";
 
 export interface LoginProps {}
-
 export interface LoginState {
   email: "";
   password: "";
@@ -32,19 +32,20 @@ export default class Login extends React.Component<LoginProps, LoginState> {
     this.state = { email: "", password: "", currentUser: "" };
   }
 
-  handleLogin = () => {
-    firebase
-      .auth()
-      .signInWithEmailAndPassword(this.state.email, this.state.password)
-      .then((currentUser: any) => this.setState1(currentUser))
-      .catch((error: any) => alert(error.message));
-    //firebase.auth().signOut();
-  }; //() => this.props.navigation.navigate("StudentHome")
-
-
   setState1 = (state: any) => {
-    this.setState({currentUser: state});
-    console.log(state)
+    this.setState({ currentUser: state });
+    toast(`Set the State to: ${state}`);
+  };
+
+  async handleLogin(email: string, password: string) {
+    if (firebase.auth()) {
+      firebase.auth().signOut();
+    }
+    const login = await firebase
+      .auth()
+      .signInWithEmailAndPassword(email, password)
+      .then((currentUser: any) => this.setState1(currentUser))
+      .catch((error: any) => toast(error.message));
   }
   public render() {
     return (
@@ -73,7 +74,9 @@ export default class Login extends React.Component<LoginProps, LoginState> {
               />
             </IonList>
             <Link
-              onClick={() => this.handleLogin()}
+              onClick={() =>
+                this.handleLogin(this.state.email, this.state.password)
+              }
               to={{
                 pathname: "/ProductListPage",
                 state: { currentUser: this.state.currentUser }
@@ -83,6 +86,7 @@ export default class Login extends React.Component<LoginProps, LoginState> {
               <IonButton>Login</IonButton>
             </Link>
           </IonCard>
+          <IonButton onClick={() => checkCurrentUser()}>Check User</IonButton>
         </IonContent>
         <IonButton routerLink="/SignUp">Sign Up</IonButton>
       </IonPage>

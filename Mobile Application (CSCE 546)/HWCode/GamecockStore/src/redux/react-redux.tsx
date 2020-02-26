@@ -1,7 +1,7 @@
 import { createStore, applyMiddleware } from "redux";
 import firebase from "firebase";
 import { db } from "../App";
-let products = [
+export var products = [
   {
     name: "Mug",
     price: 9.99,
@@ -44,7 +44,7 @@ let products = [
   }
 ];
 
-let orders = [
+export var orders = [
   {
     orderID: "1",
     numItems: 3,
@@ -82,10 +82,12 @@ let orders = [
 //
 
 const initialState: any = {
+  productsF: [],
+  ordersF: [],
   products: products,
   orders: orders,
   orderID: orders.length,
-  currentUser: ""
+  currentUser: null
 };
 
 //
@@ -109,6 +111,12 @@ const reducer = (state = initialState, action: any) => {
         ...state,
         products: newProduct
       };
+    case "firebaseProducts":
+      return { ...state, productsF: action.value };
+
+    case "firebaseOrders":
+      return { ...state, ordersF: action.value };
+
     default:
       return state;
   }
@@ -139,24 +147,66 @@ export const setUpNewProducts = (newProduct: any) => {
   };
 };
 
-const watchProducts = () => {
+export const firebaseProducts = (firebaseProducts: any) => {
+  return {
+    type: "firebaseProducts",
+    value: firebaseProducts
+  };
+};
+
+export const firebaseOrders = (firebaseOrders: any) => {
+  return {
+    type: "firebaseOrders",
+    value: firebaseOrders
+  };
+};
+
+export const setUser = (user: any) => {
+  return {
+    type: "setUser",
+    value: user
+  };
+};
+
+export const watchProducts = () => {
   return function(dispatch: any) {
-    db.collection("products")
-      .doc("products")
-      .onSnapshot(function(doc) {
-        // console.log("\n\nTest: ", doc.data());
-        var productz: any = doc.data();
-        let productPromises = productz.map((product: any) => {
+    db.collection("users")
+      .doc(initialState.currentUser.currentUser.uid)
+      .onSnapshot(function(doc: any) {
+        var productData: any = doc.data().products;
+        let ProductPromises = productData.map((product: any) => {
           return db
-            .collection("classes")
+            .collection("products")
             .doc(product)
             .get();
         });
-        Promise.all(productPromises).then((productDocs: any) => {
-          let returnClasses = productDocs.map((productDocs: any) => {
+        Promise.all(ProductPromises).then((productDocs: any) => {
+          let returnProducts = productDocs.map((productDocs: any) => {
             return productDocs.data();
           });
-          dispatch(setUpNewProducts(returnClasses));
+          dispatch(firebaseProducts(returnProducts));
+        });
+      });
+  };
+};
+
+export const watchOrders = () => {
+  return function(dispatch: any) {
+    db.collection("users")
+      .doc(initialState.currentUser.currentUser.uid)
+      .onSnapshot(function(doc: any) {
+        var orderData: any = doc.data().orders;
+        let OrderPromises = orderData.map((order: any) => {
+          return db
+            .collection("orders")
+            .doc(order)
+            .get();
+        });
+        Promise.all(OrderPromises).then((orderDocs: any) => {
+          let returnOrders = orderDocs.map((orderDocs: any) => {
+            return orderDocs.data();
+          });
+          dispatch(firebaseOrders(returnOrders));
         });
       });
   };

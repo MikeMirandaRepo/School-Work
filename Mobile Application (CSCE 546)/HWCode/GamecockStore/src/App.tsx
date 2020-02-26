@@ -44,6 +44,9 @@ import "@ionic/react/css/display.css";
 /* Theme variables */
 import "./theme/variables.css";
 import { render } from "@testing-library/react";
+import { resolve } from "dns";
+import { rejects } from "assert";
+import { toast } from "./components/toast";
 
 var firebaseConfig = {
   apiKey: "AIzaSyDRpqwzkbL7bljwjFB0jQ8iW9aozm9I21M",
@@ -61,21 +64,33 @@ firebase.analytics();
 let db = firebase.firestore();
 export { db };
 
+export async function checkCurrentUser() {
+  return new Promise((resolve, reject) => {
+    var unsubscribe = firebase.auth().onAuthStateChanged(function(user) {
+      user = firebase.auth().currentUser;
+      if (user) {
+        toast(user.uid);
+        resolve(user);
+      } else {
+        toast("There is no user Logged In");
+        reject(null);
+      }
+      unsubscribe();
+    });
+  });
+}
+
+
+export async function handleSignOut() {
+  if (firebase.auth()) {
+    await firebase.auth().signOut();
+    toast("You have signed out");
+  } else {
+    toast("No logged in User");
+  }
+}
+
 export default class App extends React.Component {
-  // firebaseSetup() {
-  //   for (let i = 0; i < orders.length; i++) {
-  //     db.collection("orders")
-  //       .add(orders[i])
-  //       .then(ref => {
-  //         console.log("Added document with ID: ", ref.id);
-  //       });
-  //     // db.collection("orders")
-  //     //   .add(orders)
-  //     //   .then(ref => {
-  //     //     console.log("Added document with ID: ", ref.id);
-  //     //   });
-  //   }
-  // }
   render() {
     return (
       <IonApp>
@@ -90,7 +105,7 @@ export default class App extends React.Component {
               />
               <Route path="/OrderListPage/details" component={OrderListPage} />
               <Route
-                path="/"
+                path=""
                 render={() => <Redirect to="/Login" />}
                 exact={true}
               />
@@ -131,10 +146,6 @@ export default class App extends React.Component {
                 <IonIcon icon={apps} />
                 <IonLabel>Order List</IonLabel>
               </IonTabButton>
-              {/* <IonTabButton onClick={() => this.firebaseSetup()} tab="">
-                <IonIcon icon={apps} />
-                <IonLabel>Firebase Test</IonLabel>
-              </IonTabButton> */}
             </IonTabBar>
           </IonTabs>
         </IonReactRouter>

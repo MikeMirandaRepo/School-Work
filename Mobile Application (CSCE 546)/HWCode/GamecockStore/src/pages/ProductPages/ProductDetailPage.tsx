@@ -18,13 +18,14 @@ import {
   IonItemSliding,
   IonToolbar
 } from "@ionic/react";
-import firebase from "firebase"
+import firebase from "firebase";
 import { add, remove } from "ionicons/icons";
 import React, { Component } from "react";
 import { setUpNewOrders } from "../../redux/react-redux";
-import { Link } from "react-router-dom";
 import { connect } from "react-redux";
-import { createSecureContext } from "tls";
+import { db } from "../../App";
+import { checkCurrentUser, handleSignOut } from "../../App";
+import { toast } from "../../components/toast";
 
 export interface IAppProps {
   history: any;
@@ -45,6 +46,7 @@ export interface IAppState {
     description: string;
     totalPrice: number;
     numItems: number;
+    pID: string;
   };
   count: number;
 }
@@ -52,7 +54,7 @@ export interface IAppState {
 const mapStateToProps = (state: any) => {
   return {
     products: state.products,
-    orderID: state.orderID,
+    orderID: state.orderID
   };
 };
 
@@ -70,8 +72,21 @@ class ProductDetailPage extends React.Component<IAppProps, IAppState> {
     console.log(this.props);
     this.state = {
       product: this.props.location.state.product,
-      count: 1,
+      count: 1
     };
+  }
+
+  deleteProduct() {
+    if (firebase.auth()) {
+      db.collection("products")
+        .doc(this.state.product.imgURL)
+        .delete()
+        .then(() =>
+          toast(`${this.state.product.name} was succesfully deleted`)
+        );
+    } else {
+      toast("You are not logged in to delete this item");
+    }
   }
 
   _setStateValues(value: any): any {
@@ -90,7 +105,32 @@ class ProductDetailPage extends React.Component<IAppProps, IAppState> {
       totalPrice: this.state.product.price * this.state.count,
       orderDate: `${month}/${day}/${year}`
     });
-    alert("You have added an new Order");
+    toast("You have added an new Order");
+  }
+
+  pushNewOrder() {
+    let date = new Date();
+    let day = date.getDate();
+    let month = date.getMonth();
+    let year = date.getFullYear();
+    let newOrder = {
+      numItems: this.state.count,
+      orderDate: `${month}/${day}/${year}`,
+      orderID: this.props.orderID,
+      totalPrice: this.state.product.price * this.state.count
+    };
+
+    this._setUpNewOrders();
+    var uid: any;
+    var user = firebase.auth().currentUser;
+    if (user != null) {
+      uid = user.uid;
+    } else console.log("THE USER WAS NULL");
+    db.collection("users")
+      .doc(uid)
+      .collection("orders")
+      .add({ newOrder })
+      .then();
   }
 
   render() {
@@ -100,7 +140,7 @@ class ProductDetailPage extends React.Component<IAppProps, IAppState> {
         <IonHeader>
           <IonToolbar>
             <IonTitle>Product Details</IonTitle>
-            <IonButton slot="primary" onClick={() => this._setUpNewOrders()}>
+            <IonButton slot="primary" onClick={() => this.pushNewOrder()}>
               Add Order
             </IonButton>
           </IonToolbar>
@@ -134,6 +174,15 @@ class ProductDetailPage extends React.Component<IAppProps, IAppState> {
                 <IonIcon slot="end" icon={add} />
               </IonRange>
             </IonItem>
+            <IonButton
+              onClick={() => this.deleteProduct()}
+              routerDirection="back"
+              routerLink="/ProductListPage"
+              slot="primary"
+            >
+              Remove Item
+            </IonButton>
+            <IonButton onClick={() => checkCurrentUser()}>Check User</IonButton>
           </IonList>
         </IonContent>
       </IonPage>

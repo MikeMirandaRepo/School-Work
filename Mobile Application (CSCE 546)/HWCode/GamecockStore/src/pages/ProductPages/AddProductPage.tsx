@@ -15,7 +15,11 @@ import {
 import React, { Component } from "react";
 import { setUpNewProducts } from "../../redux/react-redux";
 import { connect } from "react-redux";
-
+import { db } from "../../App";
+import { toast } from "../../components/toast";
+import { checkCurrentUser, handleSignOut } from "../../App";
+import { cursorTo } from "readline";
+import firebase from "firebase";
 export interface IAppProps {
   setUpNewProducts: any;
 }
@@ -63,9 +67,31 @@ class AddProductpage extends React.Component<IAppProps, IAppState> {
       imgURL: this.state.imgURL,
       description: this.state.description
     };
-    console.log(this.state)
+    console.log(this.state);
     this.props.setUpNewProducts(newProduct);
-    alert("You have added an new Product");
+    toast(`You have added ${newProduct.name}`);
+  }
+
+  pushNewProduct() {
+    let newProduct = {
+      name: this.state.name,
+      price: this.state.price,
+      category: this.state.category,
+      imgURL: this.state.imgURL,
+      description: this.state.description
+    };
+    this._setUpNewProducts();
+    var uid: any;
+    var user = firebase.auth().currentUser;
+    if (user != null) {
+      uid = user.uid;
+    } else console.log("THE USER WAS NULL");
+    db
+      .collection("users")
+      .doc(uid)
+      .collection("products")
+      .add({ newProduct })
+      .then();
   }
 
   render() {
@@ -113,9 +139,10 @@ class AddProductpage extends React.Component<IAppProps, IAppState> {
               }
             />
           </IonList>
-          <IonButton onClick={() => this._setUpNewProducts()}>
+          <IonButton onClick={() => this.pushNewProduct()}>
             Add Product
           </IonButton>
+          <IonButton onClick={() => checkCurrentUser()}>Check User</IonButton>
         </IonContent>
       </IonPage>
     );
