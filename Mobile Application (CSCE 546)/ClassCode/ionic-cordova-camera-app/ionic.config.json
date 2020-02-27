@@ -1,0 +1,7 @@
+{
+  "name": "ionic-cordova-camera-app",
+  "integrations": {
+    "cordova": {}
+  },
+  "type": "angular"
+}

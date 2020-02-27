@@ -16,7 +16,7 @@ import { Link } from "react-router-dom";
 import React, { Component } from "react";
 import firebase from "firebase";
 import { toast } from "../../components/toast";
-import { checkCurrentUser, handleSignOut } from "../../App";
+import { checkCurrentUser, handleSignOut, getCurrentData } from "../../App";
 
 const mapStateToProps = (state: any) => {
   return {
@@ -59,7 +59,7 @@ class ProductListPage extends React.Component<IAppProps, IAppState> {
           }}
           style={{ textDecoration: "none" }}
         >
-          <IonCard className="card">
+          <IonCard className="card" key={product.id}>
             <IonCardHeader>
               <IonCardTitle>{product.name}</IonCardTitle>
               <IonCardSubtitle>
@@ -75,8 +75,6 @@ class ProductListPage extends React.Component<IAppProps, IAppState> {
       );
     });
   }
-
-
 
   public render() {
     let productCards: any = this._createCardList(this.props.products);
@@ -101,6 +99,13 @@ class ProductListPage extends React.Component<IAppProps, IAppState> {
         </IonHeader>
         <IonContent>
           <IonButton onClick={() => checkCurrentUser()}>Check User</IonButton>
+          <IonButton onClick={() => getCurrentData("products")}>
+            Get User Products
+          </IonButton>
+          <IonButton onClick={() => getCurrentData("orders")}>
+            Get User Orders
+          </IonButton>
+
           {productCards}
         </IonContent>
       </IonPage>

@@ -15,7 +15,7 @@ import {
 import React, { Component } from "react";
 import { setUpNewProducts } from "../../redux/react-redux";
 import { connect } from "react-redux";
-import { db } from "../../App";
+import { db, getCurrentData } from "../../App";
 import { toast } from "../../components/toast";
 import { checkCurrentUser, handleSignOut } from "../../App";
 import { cursorTo } from "readline";
@@ -49,7 +49,7 @@ const mapDispatchToProps = (dispatch: any) => {
 class AddProductpage extends React.Component<IAppProps, IAppState> {
   constructor(props: IAppProps) {
     super(props);
-    console.log(this.props);
+    //console.log(this.props);
     this.state = {
       name: "",
       price: 0,
@@ -67,7 +67,7 @@ class AddProductpage extends React.Component<IAppProps, IAppState> {
       imgURL: this.state.imgURL,
       description: this.state.description
     };
-    console.log(this.state);
+    //console.log(this.state);
     this.props.setUpNewProducts(newProduct);
     toast(`You have added ${newProduct.name}`);
   }
@@ -81,17 +81,24 @@ class AddProductpage extends React.Component<IAppProps, IAppState> {
       description: this.state.description
     };
     this._setUpNewProducts();
-    var uid: any;
-    var user = firebase.auth().currentUser;
-    if (user != null) {
-      uid = user.uid;
+    if (firebase.auth()) {
+      var user = firebase.auth().currentUser;
     } else console.log("THE USER WAS NULL");
-    db
-      .collection("users")
-      .doc(uid)
-      .collection("products")
-      .add({ newProduct })
-      .then();
+
+    var currentOrders = getCurrentData("products");
+    console.log(currentOrders)
+    
+    // Promise.all(currentOrders).then(() =>
+    //   db
+    //     .collection("product")
+    //     .add({ newProduct })
+    //     .then((docRef: any) => {
+    //       console.log(currentOrders);
+    //       currentOrders.push(docRef.id);
+    //       console.log(docRef.id);
+    //       console.log(currentOrders + " AFTER PUSH");
+    //     })
+    // );
   }
 
   render() {

@@ -8,7 +8,7 @@ import {
   IonTabButton,
   IonTabs
 } from "@ionic/react";
-import firebase from "firebase";
+import firebase, { database } from "firebase";
 import { IonReactRouter } from "@ionic/react-router";
 import { apps, flash, send } from "ionicons/icons";
 import ProductListPage from "./pages/ProductPages/ProductListPage";
@@ -47,6 +47,7 @@ import { render } from "@testing-library/react";
 import { resolve } from "dns";
 import { rejects } from "assert";
 import { toast } from "./components/toast";
+import { defaultProducts } from "./redux/react-redux";
 
 var firebaseConfig = {
   apiKey: "AIzaSyDRpqwzkbL7bljwjFB0jQ8iW9aozm9I21M",
@@ -64,6 +65,7 @@ firebase.analytics();
 let db = firebase.firestore();
 export { db };
 
+
 export async function checkCurrentUser() {
   return new Promise((resolve, reject) => {
     var unsubscribe = firebase.auth().onAuthStateChanged(function(user) {
@@ -80,9 +82,56 @@ export async function checkCurrentUser() {
   });
 }
 
+export async function getCurrentData(type: string) {
+  const user: any = firebase.auth().currentUser;
+  if (user !== null) {
+    if (type === "products" || type === "orders") {
+      db.collection("users")
+        .doc(user.uid) //`${type}`
+        .get()
+        .then((data: any) => {
+          if (type == "orders") {
+            var orderItems = data.data().orders;
+            let itemsPromise = orderItems.map((itemID: any) => {
+              return db
+                .collection("orders")
+                .doc(itemID)
+                .get();
+            });
+            Promise.all(itemsPromise).then(itemDocs => {
+              let returnItems = itemDocs.map((itemDoc: any) => {
+                return itemDoc.data();
+              });
+              console.log(returnItems);
+              return returnItems;
+            });
+          } else {
+            var productItems = data.data().products;
+            let itemsPromise = productItems.map((itemID: any) => {
+              return db
+                .collection("products")
+                .doc(itemID)
+                .get();
+            });
+            Promise.all(itemsPromise).then(itemDocs => {
+              let returnItems = itemDocs.map((itemDoc: any) => {
+                return itemDoc.data();
+              });
+              console.log(returnItems);
+              return returnItems[0].value;
+            });
+          }
+        });
+    } else {
+      console.log("ERROR IN CALLING getCurrentData()");
+    }
+  } else {
+    console.log("User  is NULL in getCurrentData()");
+  }
+}
 
 export async function handleSignOut() {
-  if (firebase.auth()) {
+  if (await firebase.auth()) {
     await firebase.auth().signOut();
     toast("You have signed out");
   } else {
@@ -105,7 +154,7 @@ export default class App extends React.Component {
               />
               <Route path="/OrderListPage/details" component={OrderListPage} />
               <Route
-                path=""
+                path="/"
                 render={() => <Redirect to="/Login" />}
                 exact={true}
               />

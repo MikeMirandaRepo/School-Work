@@ -13,7 +13,7 @@ import {
   IonToolbar
 } from "@ionic/react";
 import React from "react";
-import { orders } from "../../redux/react-redux";
+import { defaultOrders } from "../../redux/react-redux";
 
 export interface IAppProps {
   location: any;

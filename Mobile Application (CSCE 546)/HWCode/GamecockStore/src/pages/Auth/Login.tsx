@@ -39,7 +39,7 @@ export default class Login extends React.Component<LoginProps, LoginState> {
 
   async handleLogin(email: string, password: string) {
     if (firebase.auth()) {
-      firebase.auth().signOut();
+      await firebase.auth().signOut();
     }
     const login = await firebase
       .auth()
@@ -73,18 +73,16 @@ export default class Login extends React.Component<LoginProps, LoginState> {
                 }
               />
             </IonList>
-            <Link
+
+            <IonButton
               onClick={() =>
                 this.handleLogin(this.state.email, this.state.password)
               }
-              to={{
-                pathname: "/ProductListPage",
-                state: { currentUser: this.state.currentUser }
-              }}
-              style={{ textDecoration: "none" }}
+              routerDirection="forward"
+              routerLink="/ProductListPage"
             >
-              <IonButton>Login</IonButton>
-            </Link>
+              Login
+            </IonButton>
           </IonCard>
           <IonButton onClick={() => checkCurrentUser()}>Check User</IonButton>
         </IonContent>
