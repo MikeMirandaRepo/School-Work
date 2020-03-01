@@ -47,7 +47,7 @@ import { render } from "@testing-library/react";
 import { resolve } from "dns";
 import { rejects } from "assert";
 import { toast } from "./components/toast";
-import { defaultProducts } from "./redux/react-redux";
+import { defaultOrders } from "./redux/react-redux";
 
 var firebaseConfig = {
   apiKey: "AIzaSyDRpqwzkbL7bljwjFB0jQ8iW9aozm9I21M",
@@ -63,15 +63,90 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 firebase.analytics();
 let db = firebase.firestore();
-export { db };
+export { db, provider };
 
+var provider = new firebase.auth.GoogleAuthProvider();
+
+export async function toggleStoreOwner() {
+  try {
+    let userID = returnUserUID();
+    db.collection("users")
+      .doc(userID)
+      .get()
+      .then(async (docRef: any) => {
+        let docData = await docRef.data();
+        let isStoreOwner = docData.storeOwner;
+        let docOrders = docData.orders;
+
+        isStoreOwner = !isStoreOwner;
+        db.collection("users")
+          .doc(userID)
+          .set({
+            orders: docOrders,
+            storeOwner: isStoreOwner
+          });
+      });
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+}
+
+export async function googleSignIn() {
+  const google_provider = new firebase.auth.GoogleAuthProvider();
+  try {
+    const res = await firebase
+      .auth()
+      .signInWithPopup(google_provider)
+      .then((result: any) => {
+        var user = result.user;
+        console.log(user.uid);
+        return user;
+      })
+      .then((userInfo: any) => {
+        db.collection("users")
+          .get()
+          .then(async (users: any) => {
+            let isIN: Boolean = false;
+            console.log(users);
+            users.forEach((user: any) => {
+              console.log("userID:" + user.id);
+              if (user.id === userInfo.uid) {
+                console.log("This user exists already in the DB");
+                isIN = true;
+              }
+            });
+            console.log(userInfo.email);
+            if (!isIN) {
+              let userData = {
+                orders: [],
+                storeOwner: false
+              };
+              // Add user data to users collection with doc id of uid
+              db.collection("users")
+                .doc(userInfo.uid)
+                .set(userData)
+                .then(() => toast("Updated Google User Data"))
+                .catch(error => console.log(error));
+            }
+          });
+      });
+    console.log(res);
+
+    return true;
+  } catch (error) {
+    return true;
+  }
+}
 
 export async function checkCurrentUser() {
   return new Promise((resolve, reject) => {
     var unsubscribe = firebase.auth().onAuthStateChanged(function(user) {
       user = firebase.auth().currentUser;
+      console.log(user);
       if (user) {
-        toast(user.uid);
+        console.log(user.uid);
         resolve(user);
       } else {
         toast("There is no user Logged In");
@@ -82,60 +157,42 @@ export async function checkCurrentUser() {
   });
 }
 
-export async function getCurrentData(type: string) {
-  const user: any = firebase.auth().currentUser;
-  if (user !== null) {
-    if (type === "products" || type === "orders") {
-      db.collection("users")
-        .doc(user.uid) //`${type}`
-        .get()
-        .then((data: any) => {
-          if (type == "orders") {
-            var orderItems = data.data().orders;
-            let itemsPromise = orderItems.map((itemID: any) => {
-              return db
-                .collection("orders")
-                .doc(itemID)
-                .get();
-            });
-            Promise.all(itemsPromise).then(itemDocs => {
-              let returnItems = itemDocs.map((itemDoc: any) => {
-                return itemDoc.data();
-              });
-              console.log(returnItems);
-              return returnItems;
-            });
-          } else {
-            var productItems = data.data().products;
-            let itemsPromise = productItems.map((itemID: any) => {
-              return db
-                .collection("products")
-                .doc(itemID)
-                .get();
-            });
-            Promise.all(itemsPromise).then(itemDocs => {
-              let returnItems = itemDocs.map((itemDoc: any) => {
-                return itemDoc.data();
-              });
-              console.log(returnItems);
-              return returnItems[0].value;
-            });
-          }
-        });
-    } else {
-      console.log("ERROR IN CALLING getCurrentData()");
-    }
-  } else {
-    console.log("User  is NULL in getCurrentData()");
-  }
-}
-
 export async function handleSignOut() {
-  if (await firebase.auth()) {
+  if (firebase.auth()) {
     await firebase.auth().signOut();
     toast("You have signed out");
   } else {
     toast("No logged in User");
+  }
+}
+
+export function isStoreOwner() {
+  if (firebase.auth()) {
+    return db
+      .collection("users")
+      .doc(returnUserUID())
+      .get()
+      .then((docRef: any) => {
+        if (docRef.data().storeOwner) {
+          console.log("User is a StoreOwner");
+          return true;
+        } else {
+          toast("The user is not a StoreOwner");
+          return false;
+        }
+      });
+  } else {
+    console.log("USER IS NULL IN isStoreOwner");
+  }
+}
+
+export function returnUserUID() {
+  const user = firebase.auth().currentUser;
+  console.log(user?.uid);
+  if (user) {
+    return user.uid;
+  } else {
+    console.log("USER IS NULL IN returnUserUID");
   }
 }
 

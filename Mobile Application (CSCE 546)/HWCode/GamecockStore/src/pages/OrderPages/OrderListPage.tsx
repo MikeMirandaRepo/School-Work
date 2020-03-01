@@ -12,33 +12,39 @@ import {
 import React from "react";
 import { Link } from "react-router-dom";
 import { connect } from "react-redux";
-
-export interface IAppProps {
-  orders: [];
-}
-
-export interface IAppState {}
-
+import { watchOrders } from "../../redux/react-redux";
+import { returnUserUID } from "../../App";
 const mapStateToProps = (state: any) => {
   return {
-    orders: state.orders
+    orders: state.ordersF
   };
 };
 
 const mapDispatchToProps = (dispatch: any) => {
-  return {};
+  return {
+    watchOrders: () => {
+      console.log(returnUserUID())
+      dispatch(watchOrders(returnUserUID()));
+    }
+  };
 };
 
+export interface IAppProps {
+  orders: [];
+  watchOrders: any;
+}
+
+export interface IAppState {}
 
 class OrderListPage extends React.Component<IAppProps, IAppState> {
   constructor(props: IAppProps) {
     super(props);
-    console.log(this.props);
     this.state = {};
+    this.props.watchOrders();
   }
 
   _createCardList(orders: []) {
-    return orders.map((order: any) => {
+    return orders.map((order: any, index:any) => {
       return (
         <Link
           to={{
@@ -46,7 +52,7 @@ class OrderListPage extends React.Component<IAppProps, IAppState> {
             state: { order: order }
           }}
         >
-          <IonCard className="card">
+          <IonCard className="card" key={index}>
             <IonCardHeader>
               <IonCardTitle>Order ID: {order.orderID}</IonCardTitle>
               <IonCardSubtitle>Date Ordered: {order.orderDate}</IonCardSubtitle>
@@ -61,7 +67,7 @@ class OrderListPage extends React.Component<IAppProps, IAppState> {
 
   render() {
     let orderCards: any = this._createCardList(this.props.orders);
-    console.log(orderCards);
+    //console.log(orderCards);
 
     return (
       <IonPage>
@@ -70,9 +76,7 @@ class OrderListPage extends React.Component<IAppProps, IAppState> {
             <IonTitle>Order List</IonTitle>
           </IonToolbar>
         </IonHeader>
-        <IonContent>
-          {orderCards}
-        </IonContent>
+        <IonContent>{orderCards}</IonContent>
       </IonPage>
     );
   }

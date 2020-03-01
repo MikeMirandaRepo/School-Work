@@ -1,6 +1,5 @@
 import { createStore, applyMiddleware } from "redux";
-import firebase from "firebase";
-import { db } from "../App";
+import { db, checkCurrentUser } from "../App";
 import { toast } from "../components/toast";
 import thunkMiddleware from "redux-thunk";
 
@@ -12,7 +11,7 @@ export var defaultProducts = [
     imgURL:
       "http://t0.gstatic.com/images?q=tbn%3AANd9GcSASVnRhS-7urpmFzuC0F8Y_PeZ-aLpnTBcpmLMiL2wDBxcvGfm74sWwZPoaLobI_Uz88IIk-aD&usqp=CAc",
     description: "Its a Mug",
-    id: "wSIc85UbGLx5tlZBnHKC"
+    pID: "wSIc85UbGLx5tlZBnHKC"
   },
   {
     name: "Jacket",
@@ -21,7 +20,7 @@ export var defaultProducts = [
     imgURL:
       "http://t0.gstatic.com/images?q=tbn%3AANd9GcSnFDfR0yI_WEVhW7JtzBxMUeWxoIGZ9nfNt2a17IBYuepG5BBlFkJSmZ4_5-H98jiyIv_z66M&usqp=CAc",
     description: "Its A Jacket",
-    id: "MFV8qN9gyvRfrNi2ik5G"
+    pID: "MFV8qN9gyvRfrNi2ik5G"
   },
   {
     name: "Shirt",
@@ -30,7 +29,7 @@ export var defaultProducts = [
     imgURL:
       "https://fanatics.frgimages.com/FFImage/thumb.aspx?i=/productimages/_2531000/ff_2531193b_full.jpg&w=340",
     description: "Its a Shirt",
-    id: "9Se1atQ3mibsfWpUrlxK"
+    pID: "9Se1atQ3mibsfWpUrlxK"
   },
   {
     name: "Hat",
@@ -39,7 +38,7 @@ export var defaultProducts = [
     imgURL:
       "http://t0.gstatic.com/images?q=tbn%3AANd9GcQorY8CgdcFeiiTa60B5E3y-GGWhqMFqXCy0XuqH2jUSIJ3iG2GbAowhLYpjZI&usqp=CAc",
     description: "Its A Hat",
-    id: "naT9s2nFHN6cBHte6Lus"
+    pID: "naT9s2nFHN6cBHte6Lus"
   },
   {
     name: "Tumbler",
@@ -48,7 +47,7 @@ export var defaultProducts = [
     imgURL:
       "http://t0.gstatic.com/images?q=tbn%3AANd9GcTlAv484m7340x1hv8Ts8ZP0zXjAA4X4gTaUOxXK7MB4IHOZWhj7ef196qvardYymzEG1_67Tk&usqp=CAc",
     description: "Its A Cup",
-    id: "mdvltve0Z0oxC0s6atBw"
+    pID: "mdvltve0Z0oxC0s6atBw"
   }
 ];
 export var defaultProductIDs = [
@@ -72,35 +71,35 @@ export var defaultOrders = [
     numItems: 3,
     totalPrice: 24.99,
     orderDate: "3-5-19",
-    id: "ZBYKpVquI68ZclDYc4U3"
+    pID: "ZBYKpVquI68ZclDYc4U3"
   },
   {
     orderID: "2",
     numItems: 4,
     totalPrice: 34.99,
     orderDate: "4-6-19",
-    id: "9wgmBDb0TLW2rhe8e8Yw"
+    pID: "9wgmBDb0TLW2rhe8e8Yw"
   },
   {
     orderID: "3",
     numItems: 1,
     totalPrice: 44.99,
     orderDate: "5-7-19",
-    id: "FB3KmMPYwtNnzprhSfe7"
+    pID: "FB3KmMPYwtNnzprhSfe7"
   },
   {
     orderID: "4",
     numItems: 5,
     totalPrice: 54.99,
     orderDate: "6-8-19",
-    id: "FZc0fzRrP7kwugbUgIqm"
+    pID: "FZc0fzRrP7kwugbUgIqm"
   },
   {
     orderID: "5",
     numItems: 6,
     totalPrice: 84.99,
     orderDate: "7-9-19",
-    id: "m0MmGkrWu32K0JLNdF6w"
+    pID: "m0MmGkrWu32K0JLNdF6w"
   }
 ];
 
@@ -189,56 +188,57 @@ export const firebaseOrders = (firebaseOrders: any) => {
 };
 
 export const watchProducts = () => {
-  var uid: any;
-  var user: any;
-  if (firebase.auth()) {
-    user = firebase.auth().currentUser;
-    uid = user.uid;
-  } else console.log("THE USER WAS NULL");
-
   return function(dispatch: any) {
-    if (user !== null) {
-      db.collection("users")
-        .doc(uid)
-        .onSnapshot(function(doc: any) {
-          var productData: any = doc.data().products;
-          let ProductPromises = productData.map((product: any) => {
-            return db
-              .collection("products")
-              .doc(product)
-              .get();
-          });
-          Promise.all(ProductPromises).then((productDocs: any) => {
-            let returnProducts = productDocs.map((productDocs: any) => {
-              return productDocs.data();
-            });
-            dispatch(firebaseProducts(returnProducts));
-          });
-        });
-    } else {
-      toast("THERE IS A NULL USER IN REDUX");
-    }
+    db.collection("products").onSnapshot(productDocs => {
+      var products = productDocs.docs.map((productDoc: any) => {
+        var product = productDoc.data();
+        return product;
+      });
+      dispatch(firebaseProducts(products));
+    });
   };
 };
 
-export const watchOrders = () => {
+export const watchOrders = (user: any) => {
   return function(dispatch: any) {
-    db.collection("users")
-      .doc(initialState.currentUser.currentUser.uid)
-      .onSnapshot(function(doc: any) {
-        var orderData: any = doc.data().orders;
-        let OrderPromises = orderData.map((order: any) => {
-          return db
-            .collection("orders")
-            .doc(order)
-            .get();
-        });
-        Promise.all(OrderPromises).then((orderDocs: any) => {
-          let returnOrders = orderDocs.map((orderDocs: any) => {
-            return orderDocs.data();
+    if (!user) {
+    } else {
+      console.log("USER: " + user)
+      db.collection("users")
+        .doc(user)
+        .onSnapshot(async function(doc: any) {
+          const orders = await doc.data().orders;
+          console.log("ORDERS:" + orders);
+          orders.forEach((element:any) => {
+            console.log(element.numItems)
           });
-          dispatch(firebaseOrders(returnOrders));
+          let orderProductsPromises = orders.map((currOrd: any) => {
+            console.log(currOrd)
+            return db
+              .collection("products")
+              .doc(currOrd.pID)
+              .get();
+          });
+
+          Promise.all(orderProductsPromises)
+            .then((productDocs: any) => {
+              return productDocs.map((product: any) => {
+                return product.data();
+              });
+            })
+            .then((products: any) => {
+              let finalOrders = orders.map((currOrder: any, index: number) => {
+                return {
+                  numItems: currOrder.numItems,
+                  totalPrice: currOrder.totalPrice,
+                  orderDate: currOrder.orderDate,
+                  pID: products[index],
+                  orderID: index + 1
+                };
+              });
+              dispatch(firebaseOrders(finalOrders));
+            });
         });
-      });
+    }
   };
 };

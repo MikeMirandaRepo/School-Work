@@ -16,20 +16,31 @@ import { Link } from "react-router-dom";
 import React, { Component } from "react";
 import firebase from "firebase";
 import { toast } from "../../components/toast";
-import { checkCurrentUser, handleSignOut, getCurrentData } from "../../App";
+import { checkCurrentUser, handleSignOut, toggleStoreOwner } from "../../App";
+import { watchProducts } from "../../redux/react-redux";
+import { returnUserUID } from "../../App";
+import { withRouter } from "react-router";
 
 const mapStateToProps = (state: any) => {
   return {
-    products: state.products
+    products: state.productsF
   };
 };
 
 const mapDispatchToProps = (dispatch: any) => {
-  return {};
+  return {
+    watchProducts: () => {
+      dispatch(watchProducts());
+    }
+  };
 };
 
 export interface IAppProps {
+  history: any;
+  location: any;
+  match: any;
   products: [];
+  watchProducts: any;
 }
 
 export interface IAppState {
@@ -39,15 +50,23 @@ export interface IAppState {
 class ProductListPage extends React.Component<IAppProps, IAppState> {
   constructor(props: IAppProps) {
     checkCurrentUser().then((user: any) => {
-      if (user) {
+      if (user !== null) {
         this.setState({ currentUser: user });
         toast(this.state.currentUser.uid);
+      } else {
+        console.log("CURRENT USER IS NULL");
       }
     });
     super(props);
+    this.props.watchProducts();
   }
 
   componentWillUnmount() {}
+
+  async _loginOrLogout() {
+    await handleSignOut();
+    this.props.history.replace("/Login", null);
+  }
 
   _createCardList(products: []) {
     return products.map((product: any) => {
@@ -59,7 +78,7 @@ class ProductListPage extends React.Component<IAppProps, IAppState> {
           }}
           style={{ textDecoration: "none" }}
         >
-          <IonCard className="card" key={product.id}>
+          <IonCard className="card" key={product.pID}>
             <IonCardHeader>
               <IonCardTitle>{product.name}</IonCardTitle>
               <IonCardSubtitle>
@@ -92,25 +111,31 @@ class ProductListPage extends React.Component<IAppProps, IAppState> {
             >
               Log Out
             </IonButton>
+            <IonButton
+              onClick={() => handleSignOut()}
+              slot="start"
+              routerLink="/Login"
+              routerDirection="back"
+            >
+              Log In
+            </IonButton>
             <IonButton slot="end" routerLink="/ProductListPage/AddProductPage">
               <IonText>Add Product</IonText>
             </IonButton>
           </IonToolbar>
         </IonHeader>
         <IonContent>
-          <IonButton onClick={() => checkCurrentUser()}>Check User</IonButton>
-          <IonButton onClick={() => getCurrentData("products")}>
-            Get User Products
-          </IonButton>
-          <IonButton onClick={() => getCurrentData("orders")}>
-            Get User Orders
-          </IonButton>
-
           {productCards}
+          <IonButton onClick={() => toggleStoreOwner()}>
+            Toggle StoreOwner
+          </IonButton>
         </IonContent>
       </IonPage>
     );
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ProductListPage);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withRouter(ProductListPage));

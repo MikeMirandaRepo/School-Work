@@ -12,14 +12,13 @@ import {
   IonLabel,
   IonSelectOption
 } from "@ionic/react";
-import React, { Component } from "react";
+import React from "react";
 import { setUpNewProducts } from "../../redux/react-redux";
 import { connect } from "react-redux";
-import { db, getCurrentData } from "../../App";
+import { checkCurrentUser, isStoreOwner } from "../../App";
+import { db } from "../../App";
+
 import { toast } from "../../components/toast";
-import { checkCurrentUser, handleSignOut } from "../../App";
-import { cursorTo } from "readline";
-import firebase from "firebase";
 export interface IAppProps {
   setUpNewProducts: any;
 }
@@ -49,7 +48,6 @@ const mapDispatchToProps = (dispatch: any) => {
 class AddProductpage extends React.Component<IAppProps, IAppState> {
   constructor(props: IAppProps) {
     super(props);
-    //console.log(this.props);
     this.state = {
       name: "",
       price: 0,
@@ -72,33 +70,36 @@ class AddProductpage extends React.Component<IAppProps, IAppState> {
     toast(`You have added ${newProduct.name}`);
   }
 
-  pushNewProduct() {
-    let newProduct = {
-      name: this.state.name,
-      price: this.state.price,
-      category: this.state.category,
-      imgURL: this.state.imgURL,
-      description: this.state.description
-    };
-    this._setUpNewProducts();
-    if (firebase.auth()) {
-      var user = firebase.auth().currentUser;
-    } else console.log("THE USER WAS NULL");
-
-    var currentOrders = getCurrentData("products");
-    console.log(currentOrders)
-    
-    // Promise.all(currentOrders).then(() =>
-    //   db
-    //     .collection("product")
-    //     .add({ newProduct })
-    //     .then((docRef: any) => {
-    //       console.log(currentOrders);
-    //       currentOrders.push(docRef.id);
-    //       console.log(docRef.id);
-    //       console.log(currentOrders + " AFTER PUSH");
-    //     })
-    // );
+  async pushNewProduct() {
+    let isOwner = await isStoreOwner();
+    console.log("USER? " + isOwner)
+    if (isOwner) {
+      console.log(isStoreOwner());
+      let newProduct = {
+        name: this.state.name,
+        price: this.state.price,
+        category: this.state.category,
+        imgURL: this.state.imgURL,
+        description: this.state.description,
+        pID: ""
+      };
+      //this._setUpNewProducts();
+        db.collection("products")
+          .add(newProduct)
+          .then((newProd: any) => {
+            let prodID = newProd.id;
+            newProduct.pID = prodID;
+            return newProduct;
+          })
+          .then((newP: any) => {
+            db.collection("products")
+              .doc(newP.pID)
+              .set(newP);
+          });
+    } else {
+      console.log("The user is not a Store Owner. Cannot Add This Item");
+      toast("The user is not a Store Owner. Cannot Add This Item");
+    }
   }
 
   render() {
