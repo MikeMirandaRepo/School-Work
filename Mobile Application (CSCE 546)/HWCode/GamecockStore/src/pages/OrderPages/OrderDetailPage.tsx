@@ -10,7 +10,9 @@ import {
   IonItemSliding,
   IonPage,
   IonTitle,
-  IonToolbar
+  IonToolbar,
+  IonCard,
+  IonText
 } from "@ionic/react";
 import React from "react";
 import { defaultOrders } from "../../redux/react-redux";
@@ -51,8 +53,9 @@ export default class OrderDetailPage extends React.Component<
           .doc(uid)
           .get()
           .then(async (docRef: any) => {
-            let data = await docRef.data().orders;
+            let data = await docRef.data().shopOrders;
             let deletedOID = this.state.order.orderID;
+            let index:number = 1
             data.forEach((element: any) => {
               if (parseInt(element.orderID, 10) !== deletedOID) {
                 console.log(
@@ -61,6 +64,8 @@ export default class OrderDetailPage extends React.Component<
                     " and DB:" +
                     element.orderID
                 );
+                element.orderID = index
+                index++
                 dataList.push(element);
               } else {
                 console.log(
@@ -80,7 +85,7 @@ export default class OrderDetailPage extends React.Component<
             db.collection("users")
               .doc(uid)
               .set({
-                orders: data,
+                shopOrders: data,
                 storeOwner: ifOwner
               });
             console.log(listData);
@@ -90,9 +95,37 @@ export default class OrderDetailPage extends React.Component<
     }
     console.log(this.state.order);
   }
+  checkState() {
+    console.log(this.state.order);
+  }
+
+  _createCardList(products: any) {
+    return products.map((product: any, index: any) => {
+      return (
+        <IonCard className="card" key={index}>
+          <IonCardHeader>
+            <IonCardTitle>
+              Product: {product.product.name}
+            </IonCardTitle>
+            <IonCardSubtitle>
+              Number of Products: {product.numItems}
+            </IonCardSubtitle>
+            <IonCardSubtitle>
+              Total Price: ${product.totalPrice.toFixed(2)}
+            </IonCardSubtitle>
+          </IonCardHeader>
+          <img src={product.product.imgURL} />
+          <IonText>
+            Description: {product.product.description}
+          </IonText>
+        </IonCard>
+      );
+    });
+  }
 
   render() {
-    const { order } = this.state;
+    let productCards: any = this._createCardList(this.state.order.shoppingProducts);
+
     return (
       <IonPage>
         <IonHeader>
@@ -109,24 +142,8 @@ export default class OrderDetailPage extends React.Component<
           </IonToolbar>
         </IonHeader>
         <IonContent>
-          <IonList class="ion-text-center">
-            <IonItemSliding>
-              <IonItem lines="full">
-                <IonCardHeader>
-                  <IonCardTitle>Order ID: {order.orderID}</IonCardTitle>
-                  <IonCardSubtitle>
-                    Date Ordered: {order.orderDate}
-                  </IonCardSubtitle>
-                  <IonCardSubtitle>
-                    Order Count: {order.numItems}
-                  </IonCardSubtitle>
-                  <IonCardSubtitle>
-                    Total Price: {order.totalPrice}
-                  </IonCardSubtitle>
-                </IonCardHeader>
-              </IonItem>
-            </IonItemSliding>
-          </IonList>
+          <IonButton onClick={() => this.checkState()}>Check State</IonButton>
+          {productCards}
         </IonContent>
       </IonPage>
     );

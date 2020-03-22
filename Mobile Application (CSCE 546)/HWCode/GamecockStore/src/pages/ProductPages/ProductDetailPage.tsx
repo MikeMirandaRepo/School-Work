@@ -22,7 +22,7 @@ import {
 import firebase from "firebase";
 import { add, remove, list } from "ionicons/icons";
 import React, { Component } from "react";
-import { setUpNewOrders } from "../../redux/react-redux";
+import { setUpNewOrders, addShoppingProduct } from "../../redux/react-redux";
 import { connect } from "react-redux";
 import { checkCurrentUser, returnUserUID, db, isStoreOwner } from "../../App";
 import { toast } from "../../components/toast";
@@ -37,6 +37,7 @@ export interface IAppProps {
   product: any;
   orderID: any;
   setUpNewOrders: any;
+  addShoppingProduct: any;
 }
 
 export interface IAppState {
@@ -66,6 +67,9 @@ const mapDispatchToProps = (dispatch: any) => {
   return {
     setUpNewOrders: (order: any) => {
       dispatch(setUpNewOrders(order));
+    },
+    addShoppingProduct: (product: any) => {
+      dispatch(addShoppingProduct(product));
     }
   };
 };
@@ -128,6 +132,16 @@ class ProductDetailPage extends React.Component<IAppProps, IAppState> {
     });
 
     toast("You have added an new Order");
+  }
+
+  _addToShoppingCart() {
+    this.props.addShoppingProduct({
+      product: this.state.product,
+      numItems: this.state.count,
+      totalPrice: this.state.product.price * this.state.count,
+    });
+
+    toast("You have added to your Shopping Cart");
   }
 
   async pushNewOrder() {
@@ -249,14 +263,14 @@ class ProductDetailPage extends React.Component<IAppProps, IAppState> {
                 <IonIcon slot="end" icon={add} />
               </IonRange>
             </IonItem>
-            <IonButton
-              onClick={() => this._deleteProduct()}
-              slot="primary"
-            >
+            <IonButton onClick={() => this._deleteProduct()} slot="primary">
               Remove Item
             </IonButton>
             <IonButton onClick={() => checkCurrentUser()}>Check User</IonButton>
           </IonList>
+          <IonButton onClick={() => this._addToShoppingCart()} >
+            Add to Shopping Cart
+          </IonButton>
           <IonAlert
             isOpen={this.state.showAlert}
             onDidDismiss={() => this._showAlert(false)}
@@ -296,204 +310,3 @@ export default connect(
   mapStateToProps,
   mapDispatchToProps
 )(withRouter(ProductDetailPage));
-
-// import React from "react";
-// import {
-//   IonContent,
-//   IonHeader,
-//   IonPage,
-//   IonTitle,
-//   IonToolbar,
-//   IonText,
-//   IonGrid,
-//   IonRow,
-//   IonRange,
-//   IonBackButton,
-//   IonButton,
-//   IonAlert
-// } from "@ionic/react";
-// import { connect } from "react-redux";
-// import {
-//   getUser,
-//   addNewOrder,
-//   getUserData,
-//   deleteProduct
-// } from "../firebaseConfig";
-// import { withRouter } from "react-router";
-
-// export interface IAppProps {
-//   history: any;
-//   location: any;
-//   match: any;
-//   staticContext: any;
-//   product: any;
-//   orderId: any;
-//   addOrder: any;
-// }
-
-// export interface IAppState {
-//   product: {
-//     name: string;
-//     price: number;
-//     category: string;
-//     photo_url: string;
-//     description: string;
-//     id: string;
-//   };
-//   numItems: number;
-//   showAlert: boolean;
-//   showWarning: boolean;
-// }
-
-// const mapStateToProps = (state: any) => {
-//   return {
-//     orderId: state.orderId
-//   };
-// };
-
-// const mapDispatchToProps = (dispatch: any) => {
-//   return {};
-// };
-
-// class ProductDetailsPage extends React.Component<IAppProps, IAppState> {
-//   constructor(props: IAppProps) {
-//     super(props);
-//     this.state = {
-//       product: this.props.location.state.product,
-//       numItems: 1,
-//       showAlert: false,
-//       showWarning: false
-//     };
-//   }
-
-//   _showAlert(show: boolean) {
-//     this.setState({ showAlert: show });
-//   }
-
-//   _showWarning(show: boolean) {
-//     this.setState({ showWarning: show });
-//   }
-
-//   _updateItems(value: any): any {
-//     this.setState({ numItems: value });
-//   }
-
-//   _addOrder() {
-//     let date = new Date();
-//     let day = date.getDate();
-//     let month = date.getMonth();
-//     let year = date.getFullYear();
-//     let newOrder = {
-//       productID: this.state.product.id,
-//       numItems: this.state.numItems,
-//       totalPrice: this.state.product.price * this.state.numItems,
-//       orderDate: `${month}/${day}/${year}`
-//     };
-//     addNewOrder(getUser(), newOrder);
-//     this.props.history.goBack();
-//   }
-
-//   _deleteProduct() {
-//     getUserData(getUser()).then((userDoc: any) => {
-//       const storeOwner = userDoc.data().storeOwner;
-//       if (storeOwner) {
-//         this._showAlert(true);
-//       } else {
-//         this._showWarning(true);
-//       }
-//     });
-//   }
-
-//   public render() {
-//     const { product } = this.state;
-//     return (
-//       <IonPage>
-//         <IonHeader>
-//           <IonToolbar>
-//             <IonButton slot="start">
-//               <IonBackButton />
-//             </IonButton>
-//             <IonButton
-//               slot="end"
-//               onClick={() => {
-//                 this._addOrder();
-//               }}
-//             >
-//               <IonText>Order Items</IonText>
-//             </IonButton>
-//             <IonButton
-//               onClick={() => {
-//                 this._deleteProduct();
-//               }}
-//             >
-//               <IonText>Delete Item</IonText>
-//             </IonButton>
-//           </IonToolbar>
-//         </IonHeader>
-//         <IonContent>
-//           <IonGrid>
-//             <IonText>{product.name}</IonText>
-//             <IonRow>
-//               <IonRange
-//                 min={1}
-//                 max={10}
-//                 ticks={true}
-//                 snaps={true}
-//                 pin={true}
-//                 onIonChange={e => {
-//                   this._updateItems(e.detail.value);
-//                 }}
-//               />
-//             </IonRow>
-//             <IonRow>
-//               <IonText>Price per unit: {product.price}</IonText>
-//             </IonRow>
-//             <IonRow>
-//               <IonText>
-//                 Order Price: {product.price * this.state.numItems}
-//               </IonText>
-//             </IonRow>
-//             <IonRow>
-//               <img className="col-33" src={product.photo_url} alt="" />
-//             </IonRow>
-//             <IonText>Description: {product.description}</IonText>
-//           </IonGrid>
-//           <IonAlert
-//             isOpen={this.state.showAlert}
-//             onDidDismiss={() => this._showAlert(false)}
-//             header={"Are you sure you want to delete this product?"}
-//             buttons={[
-//               {
-//                 text: "Yes",
-//                 handler: () => {
-//                   deleteProduct(this.state.product.id);
-//                   console.log("Confirm Product Delete");
-//                   this.props.history.goBack();
-//                 }
-//               },
-//               {
-//                 text: "No",
-//                 handler: () => {
-//                   console.log("Product Delete Canceled");
-//                 }
-//               }
-//             ]}
-//           />
-//           <IonAlert
-//             isOpen={this.state.showWarning}
-//             onDidDismiss={() => {
-//               this._showWarning(false);
-//             }}
-//             header={"You cannot delete products unless you are the store owner"}
-//             buttons={["Ok"]}
-//           />
-//         </IonContent>
-//       </IonPage>
-//     );
-//   }
-// }
-
-// export default connect(
-//   mapStateToProps,
-//   mapDispatchToProps
-// )(withRouter(ProductDetailsPage));

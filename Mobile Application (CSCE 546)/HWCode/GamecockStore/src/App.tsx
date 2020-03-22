@@ -18,6 +18,7 @@ import OrderListPage from "./pages/OrderPages/OrderListPage";
 import OrderDetailPage from "./pages/OrderPages/OrderDetailPage";
 import Login from "./pages/Auth/Login";
 import SignUp from "./pages/Auth/SignUp";
+import ShoppingCart from "./pages/ProductPages/ShoppingCart";
 
 import {
   Redirect,
@@ -76,13 +77,13 @@ export async function toggleStoreOwner() {
       .then(async (docRef: any) => {
         let docData = await docRef.data();
         let isStoreOwner = docData.storeOwner;
-        let docOrders = docData.orders;
+        let docOrders = docData.shopOrders;
 
         isStoreOwner = !isStoreOwner;
         db.collection("users")
           .doc(userID)
           .set({
-            orders: docOrders,
+            shopOrders: docOrders,
             storeOwner: isStoreOwner
           });
       });
@@ -91,6 +92,33 @@ export async function toggleStoreOwner() {
     console.log(error);
     return false;
   }
+}
+
+export async function testWatch() {
+  var uid = returnUserUID();
+  db.collection("users")
+    .doc(uid)
+    .onSnapshot(async function(doc: any) {
+      const orders = await doc.data().shopOrders;
+      console.log("ORDERS:" + orders);
+      orders.forEach((element: any) => {
+        console.log(element.numItems);
+      });
+      let allOrders: any = orders.map((currOrder: any, index: number) => {
+        let tempOrder: any = {};
+        let tempProducts: any[] = [];
+        tempOrder.orderID = index + 1;
+        tempOrder.orderDate = currOrder.orderDate;
+        tempOrder.orderPrice = currOrder.orderPrice;
+        currOrder.shoppingProducts.forEach((currProd: any) => {
+          tempProducts.push(currProd);
+        })
+        tempOrder.shoppingProducts = tempProducts;
+        console.log(tempOrder);
+        return tempOrder;
+      });
+      console.log(allOrders);
+    });
 }
 
 export async function googleSignIn() {
@@ -121,6 +149,7 @@ export async function googleSignIn() {
             if (!isIN) {
               let userData = {
                 orders: [],
+                shopOrders: [],
                 storeOwner: false
               };
               // Add user data to users collection with doc id of uid
@@ -144,9 +173,9 @@ export async function checkCurrentUser() {
   return new Promise((resolve, reject) => {
     var unsubscribe = firebase.auth().onAuthStateChanged(function(user) {
       user = firebase.auth().currentUser;
-      console.log(user);
+      //console.log(user);
       if (user) {
-        console.log(user.uid);
+        //console.log(user.uid);
         resolve(user);
       } else {
         toast("There is no user Logged In");
@@ -213,6 +242,11 @@ export default class App extends React.Component {
               <Route
                 path="/"
                 render={() => <Redirect to="/Login" />}
+                exact={true}
+              />
+              <Route
+                path="/ProductListPage/ShoppingCart"
+                component={ShoppingCart}
                 exact={true}
               />
               <Route

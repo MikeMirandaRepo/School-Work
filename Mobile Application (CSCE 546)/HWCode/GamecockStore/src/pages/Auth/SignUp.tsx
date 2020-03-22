@@ -58,6 +58,7 @@ class SignUp extends React.Component<SignUpProps, SignUpState> {
         .then(() => {
           let userData = {
             orders: [],
+            shopOrders: [],
             storeOwner: true
             //products: defaultProductIDs
           };

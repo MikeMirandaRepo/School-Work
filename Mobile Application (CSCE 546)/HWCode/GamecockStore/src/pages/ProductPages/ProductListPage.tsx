@@ -16,7 +16,7 @@ import { Link } from "react-router-dom";
 import React, { Component } from "react";
 import firebase from "firebase";
 import { toast } from "../../components/toast";
-import { checkCurrentUser, handleSignOut, toggleStoreOwner } from "../../App";
+import { checkCurrentUser, handleSignOut, toggleStoreOwner, testWatch } from "../../App";
 import { watchProducts } from "../../redux/react-redux";
 import { returnUserUID } from "../../App";
 import { withRouter } from "react-router";
@@ -125,6 +125,12 @@ class ProductListPage extends React.Component<IAppProps, IAppState> {
           </IonToolbar>
         </IonHeader>
         <IonContent>
+          <IonButton
+            routerDirection="forward"
+            routerLink="/ProductListPage/ShoppingCart"
+          >
+            Shopping Cart
+          </IonButton>
           {productCards}
           <IonButton onClick={() => toggleStoreOwner()}>
             Toggle StoreOwner

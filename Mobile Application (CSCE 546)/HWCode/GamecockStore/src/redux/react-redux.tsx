@@ -113,7 +113,8 @@ const initialState: any = {
   products: defaultProducts,
   orders: defaultOrders,
   orderID: defaultOrders.length + 1,
-  currentUser: null
+  currentUser: null,
+  shoppingProducts: []
 };
 
 //
@@ -137,11 +138,21 @@ const reducer = (state = initialState, action: any) => {
         ...state,
         products: newProduct
       };
+    case "addShoppingProduct":
+      let plusProducts = state.shoppingProducts;
+      plusProducts.push(action.value);
+      return {
+        ...state,
+        shoppingProducts: plusProducts
+      };
     case "firebaseProducts":
       return { ...state, productsF: action.value };
 
     case "firebaseOrders":
       return { ...state, ordersF: action.value };
+
+    case "clearShoppingCart":
+      return { ...state, shoppingProducts: [] };
 
     default:
       return state;
@@ -158,6 +169,12 @@ export { store };
 //
 // Action Creator
 //
+export const addShoppingProduct = (newProduct: any) => {
+  return {
+    type: "addShoppingProduct",
+    value: newProduct
+  };
+};
 
 export const setUpNewOrders = (newOrder: any) => {
   return {
@@ -187,6 +204,12 @@ export const firebaseOrders = (firebaseOrders: any) => {
   };
 };
 
+export const clearShoppingCart = () => {
+  return {
+    type: "clearShoppingCart"
+  };
+};
+
 export const watchProducts = () => {
   return function(dispatch: any) {
     db.collection("products").onSnapshot(productDocs => {
@@ -203,17 +226,17 @@ export const watchOrders = (user: any) => {
   return function(dispatch: any) {
     if (!user) {
     } else {
-      console.log("USER: " + user)
+      console.log("USER: " + user);
       db.collection("users")
         .doc(user)
         .onSnapshot(async function(doc: any) {
           const orders = await doc.data().orders;
           console.log("ORDERS:" + orders);
-          orders.forEach((element:any) => {
-            console.log(element.numItems)
+          orders.forEach((element: any) => {
+            console.log(element.numItems);
           });
           let orderProductsPromises = orders.map((currOrd: any) => {
-            console.log(currOrd)
+            console.log(currOrd);
             return db
               .collection("products")
               .doc(currOrd.pID)
@@ -238,6 +261,38 @@ export const watchOrders = (user: any) => {
               });
               dispatch(firebaseOrders(finalOrders));
             });
+        });
+    }
+  };
+};
+
+export const watchOrdersV2 = (user: any) => {
+  return function(dispatch: any) {
+    if (!user) {
+    } else {
+      console.log("USER: " + user);
+      db.collection("users")
+        .doc(user)
+        .onSnapshot(async function(doc: any) {
+          const orders = await doc.data().shopOrders;
+          console.log("ORDERS:" + orders);
+          orders.forEach((element: any) => {
+            console.log(element.numItems);
+          });
+          let allOrders: any = orders.map((currOrder: any, index: number) => {
+            let tempOrder: any = {};
+            let tempProducts: any[] = [];
+            tempOrder.orderID = index + 1;
+            tempOrder.orderDate = currOrder.orderDate;
+            tempOrder.orderPrice = currOrder.orderPrice;
+            currOrder.shoppingProducts.forEach((currProd: any) => {
+              tempProducts.push(currProd);
+            });
+            tempOrder.shoppingProducts = tempProducts;
+            console.log(tempOrder);
+            return tempOrder;
+          });
+          dispatch(firebaseOrders(allOrders));
         });
     }
   };

@@ -12,7 +12,7 @@ import {
 import React from "react";
 import { Link } from "react-router-dom";
 import { connect } from "react-redux";
-import { watchOrders } from "../../redux/react-redux";
+import { watchOrders, watchOrdersV2 } from "../../redux/react-redux";
 import { returnUserUID } from "../../App";
 const mapStateToProps = (state: any) => {
   return {
@@ -23,8 +23,8 @@ const mapStateToProps = (state: any) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     watchOrders: () => {
-      console.log(returnUserUID())
-      dispatch(watchOrders(returnUserUID()));
+      console.log(returnUserUID());
+      dispatch(watchOrdersV2(returnUserUID()));
     }
   };
 };
@@ -44,7 +44,7 @@ class OrderListPage extends React.Component<IAppProps, IAppState> {
   }
 
   _createCardList(orders: []) {
-    return orders.map((order: any, index:any) => {
+    return orders.map((order: any, index: any) => {
       return (
         <Link
           to={{
@@ -56,8 +56,8 @@ class OrderListPage extends React.Component<IAppProps, IAppState> {
             <IonCardHeader>
               <IonCardTitle>Order ID: {order.orderID}</IonCardTitle>
               <IonCardSubtitle>Date Ordered: {order.orderDate}</IonCardSubtitle>
-              <IonCardSubtitle>Order Count:{order.numItems}</IonCardSubtitle>
-              <IonCardSubtitle>Total Price: {order.totalPrice}</IonCardSubtitle>
+              <IonCardSubtitle>Number of Products: {order.shoppingProducts.length}</IonCardSubtitle>
+              <IonCardSubtitle>Total Price: ${order.orderPrice.toFixed(2)}</IonCardSubtitle>
             </IonCardHeader>
           </IonCard>
         </Link>
